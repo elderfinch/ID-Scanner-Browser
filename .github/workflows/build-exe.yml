@@ -1,0 +1,37 @@
+name: Build Windows EXE
+
+# This tells GitHub to run the script whenever you push code, 
+# or when you manually click the "Run workflow" button.
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # CRITICAL: This forces the cloud server to run Windows!
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Use a stable version of Python
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller pillow pywin32
+
+    - name: Build the EXE with PyInstaller
+      run: |
+        pyinstaller --onefile --noconsole mission_scanner.py
+
+    - name: Upload the EXE so you can download it
+      uses: actions/upload-artifact@v4
+      with:
+        name: Mission-Scanner-App
+        path: dist/mission_scanner.exe
