@@ -1,6 +1,5 @@
 name: Build and Release Windows EXE
 
-# This allows you to manually trigger the workflow and type a version number
 on:
   workflow_dispatch:
     inputs:
@@ -9,11 +8,13 @@ on:
         required: true
         default: 'v1.0'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-release:
     runs-on: windows-latest
     
-    # CRITICAL: This gives the script permission to create a release in your repo
     permissions:
       contents: write
 
