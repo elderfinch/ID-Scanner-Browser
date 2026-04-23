@@ -1,16 +1,21 @@
-name: Build Windows EXE
+name: Build and Release Windows EXE
 
-# This tells GitHub to run the script whenever you push code, 
-# or when you manually click the "Run workflow" button.
+# This allows you to manually trigger the workflow and type a version number
 on:
-  push:
-    branches: [ "main", "master" ]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version (e.g., v1.0, v1.1)'
+        required: true
+        default: 'v1.0'
 
 jobs:
-  build:
-    # CRITICAL: This forces the cloud server to run Windows!
+  build-and-release:
     runs-on: windows-latest
+    
+    # CRITICAL: This gives the script permission to create a release in your repo
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout Code
@@ -19,7 +24,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11' # Use a stable version of Python
+        python-version: '3.11'
 
     - name: Install Dependencies
       run: |
@@ -30,8 +35,12 @@ jobs:
       run: |
         pyinstaller --onefile --noconsole mission_scanner.py
 
-    - name: Upload the EXE so you can download it
-      uses: actions/upload-artifact@v4
+    - name: Create GitHub Release and Upload EXE
+      uses: softprops/action-gh-release@v2
       with:
-        name: Mission-Scanner-App
-        path: dist/mission_scanner.exe
+        tag_name: ${{ github.event.inputs.version }}
+        name: Mission Scanner App ${{ github.event.inputs.version }}
+        body: "Automated release of the Mission Office ID Scanner."
+        files: dist/mission_scanner.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
